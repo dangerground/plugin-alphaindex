@@ -123,8 +123,6 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
             $replace  = array('','','');
             $alpha_data = preg_replace($patterns, $replace, $alpha_data);
             $renderer->doc .= '<div id="alphaindex_content">' ;
-            $renderer->doc .= $ns_data;
-            $renderer->doc .= '<hr />';
             $renderer->doc .= $alpha_data;
             $renderer->doc .= '</div>' ;
             return true;
