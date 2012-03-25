@@ -4,12 +4,13 @@
  * Info Alphaindex: Displays the alphabetical index of a specified namespace.
  *
  * Version: 1.2
- * last modified: 2006-06-14 12:00:00
+ * last modified: 2012-03-25 19:00:00
  * @license     GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author      Hubert Molière  <hubert.moliere@alternet.fr>
  * Modified by  Nicolas H. <prog@a-et-n.com>
  * Modified by  Jonesy <jonesy@oryma.org>
  * Modified by  Samuele Tognini <samuele@netsons.org>
+ * Modified by  Danny Götte <danny.goette@fem.tu-ilmenau.de>
  */
 
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
@@ -79,11 +80,20 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         
         // namespaces option
         $nons = in_array('nons', $match);
+  
+        // reverse listing option
+        $reverse = in_array('reverse', $match);
+        
+        // reverse listing option
+        $dates = in_array('dates', $match);
+
+        // only list namespaces option
+        $nsonly = in_array('nsonly', $match);
         
         // multi-columns option
         $incol = in_array('incol', $match);
         
-        return array($ns, array('level' => $level, 'nons' => $nons, 'incol' => $incol));
+        return array($ns, array('level' => $level, 'nons' => $nons, 'incol' => $incol, 'reverse' => $reverse, 'dates' => $dates, 'nsonly' => $nsonly));
     }
 
     /**
@@ -244,7 +254,10 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
                 $firstLetter = utf8_deaccent(utf8_strtolower(utf8_substr($pageName, 0, 1)));
                 
                 if(is_numeric($firstLetter)) {
-                    if($this->getConf('numerical_index')) {
+                	$first4 = utf8_deaccent(utf8_strtolower(utf8_substr($pageName, 0, 4)));
+                    if ($opts['dates'] && is_numeric($first4) ) {
+                    	$firstLetter = $first4;
+                	}elseif($this->getConf('numerical_index')) {
                         $firstLetter = $this->getConf('numerical_index');
                     } else {
                         $firstLetter = '0-9';
@@ -268,7 +281,13 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         }
 
         // array sorting by key
-        ksort($alpha_data);
+        if (!$opts['reverse']) {
+        	ksort($alpha_data);
+        } else {
+        	
+        	// reverse option
+        	krsort($alpha_data);	
+        }
 
         // Display of results
 
@@ -277,9 +296,16 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         $nb_data = count($alpha_data);
         
         foreach($alpha_data as $key => $currentLetter) {
-            // Sorting of $currentLetter array
-            usort($currentLetter, create_function('$a, $b', "return strnatcasecmp(\$a['id2'], \$b['id2']);"));
-
+        	
+            // Sorting of $currentLetter array, using the reverse option if given
+            if ($opts['reverse'] || ($opts['dates'] && is_numeric($currentLetter))) {
+        		// reverse option (changed param order to affect sorting)
+    			usort($currentLetter, create_function('$b, $a', "return strnatcasecmp(\$a['id2'], \$b['id2']);"));
+        	} else {
+        		// normal sorting
+	    	    usort($currentLetter, create_function('$a, $b', "return strnatcasecmp(\$a['id2'], \$b['id2']);"));
+        	}
+        	
             $begin = str_replace("{{letter}}" ,utf8_strtoupper($key), $beginLetterTpl);
             $alphaOutput .= $begin."\n";
             foreach($currentLetter as $currentLetterEntry) {
@@ -315,6 +341,10 @@ function alphaindex_search_index(&$data, $base, $file, $type, $lvl, $opts) {
     }elseif($type == 'f' && !preg_match('#\.txt$#',$file)){
         // don't add the page
         return false;
+    }
+    
+    if ($type == 'f' && $opts['nsonly']) {
+    	return false;	
     }
 
     $id = pathID($file);

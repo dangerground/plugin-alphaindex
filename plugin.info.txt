@@ -1,7 +1,7 @@
 base   alphaindex
-author Hubert Moli�re
-email  takashi [at] natural [dash] design [dot] net
-date   2008-10-18
+author Hubert Molière, Matthias Schulte, Danny Götte
+email  danny.goette@fem.tu-ilmenau.de
+date   2012-03-25
 name   alphaindex plugin
 desc   Allows you to insert the alphabetical index of a namespace in a page
 url    http://dokuwiki.org/plugin:alphaindex
