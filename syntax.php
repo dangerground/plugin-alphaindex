@@ -103,6 +103,7 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         global $conf;
 
         if($mode == 'xhtml'){
+            $renderer->info['cache'] = FALSE;
             $alpha_data = $this->_alpha_index($data, $renderer);
             if ((!@$n)) {
                 if ($this->getConf('empty_msg')) {
