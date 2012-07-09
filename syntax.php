@@ -48,6 +48,7 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
      * Handle the match
      */
     function handle($match, $state, $pos, &$handler){
+	global $ID;
         $level = 0;
         $nons = true;
         $match = substr($match, 13, -2);
@@ -70,7 +71,12 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
 	              $ns = '.';
               }
         }
-        
+
+	// add @ID@ option
+        if($ns == '@ID@') {
+                $ns = $ID;
+        }
+ 
         // level;
         if (is_numeric($ns_opt[1])) {
             $level = $ns_opt[1];
