@@ -48,6 +48,7 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
      * Handle the match
      */
     function handle($match, $state, $pos, &$handler){
+	global $ID;
         $level = 0;
         $nons = true;
         $match = substr($match, 13, -2);
@@ -70,7 +71,12 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
 	              $ns = '.';
               }
         }
-        
+
+	// add @ID@ option
+        if($ns == '@ID@') {
+                $ns = $ID;
+        }
+ 
         // level;
         if (is_numeric($ns_opt[1])) {
             $level = $ns_opt[1];
@@ -89,11 +95,17 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
 
         // only list namespaces option
         $nsonly = in_array('nsonly', $match);
+
+        // no top heading
+        $notopheading = in_array('notopheading', $match);
         
+        // no section heading
+        $noheading = in_array('noheading', $match);
+
         // multi-columns option
         $incol = in_array('incol', $match);
         
-        return array($ns, array('level' => $level, 'nons' => $nons, 'incol' => $incol, 'reverse' => $reverse, 'dates' => $dates, 'nsonly' => $nsonly));
+        return array($ns, array('level' => $level, 'nons' => $nons, 'incol' => $incol, 'reverse' => $reverse, 'dates' => $dates, 'nsonly' => $nsonly, 'notopheading' => $notopheading, 'noheading' => $noheading));
     }
 
     /**
@@ -291,7 +303,9 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         // Display of results
 
         // alphabetical index
-        $alphaOutput .= $titleTpl . "\n";
+	if (!$opts['notopheading']) {
+        	$alphaOutput .= $titleTpl . "\n";
+	}
         $nb_data = count($alpha_data);
         
         foreach($alpha_data as $key => $currentLetter) {
@@ -306,7 +320,9 @@ class syntax_plugin_alphaindex extends DokuWiki_Syntax_Plugin {
         	}
         	
             $begin = str_replace("{{letter}}" ,utf8_strtoupper($key), $beginLetterTpl);
-            $alphaOutput .= $begin."\n";
+	    if (!$opts['noheading']) {
+            	$alphaOutput .= $begin."\n";
+            }
             foreach($currentLetter as $currentLetterEntry) {
                 $link = str_replace("{{link}}" ,$currentLetterEntry['id'], $entryTpl);
                 $alphaOutput .= str_replace("{{name}}" ,$currentLetterEntry['id2'], $link);
